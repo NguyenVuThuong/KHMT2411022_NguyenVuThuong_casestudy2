@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Chỉ trả về các trường an toàn, TUYỆT ĐỐI không trả passwordHash
@@ -10,6 +11,13 @@ function toUserResponse(user) {
     avatarUrl: user.avatarUrl,
     createdAt: user.createdAt
   };
+}
+
+// Tạo token JWT chứa id của user, ký bằng JWT_SECRET trong .env
+function signToken(userId) {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+  });
 }
 
 // POST /api/auth/register
@@ -56,4 +64,39 @@ async function register(req, res) {
   });
 }
 
-module.exports = { register };
+// POST /api/auth/login
+async function login(req, res) {
+  const { email, password } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // 1. Tìm user theo email
+  const user = await User.findOne({ email: normalizedEmail });
+
+  // 2. So sánh mật khẩu người dùng nhập với bản băm đã lưu
+  const isMatch = user
+    ? await bcrypt.compare(password, user.passwordHash)
+    : false;
+
+  // Sai email hay sai mật khẩu đều trả CÙNG một thông báo,
+  // để kẻ xấu không dò ra được email nào đã đăng ký
+  if (!isMatch) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Email hoặc mật khẩu không đúng'
+    });
+  }
+
+  // 3. Đúng thông tin: cấp token
+  const token = signToken(user._id);
+
+  res.json({
+    status: 'success',
+    message: 'Đăng nhập thành công',
+    data: {
+      token,
+      user: toUserResponse(user)
+    }
+  });
+}
+
+module.exports = { register, login };

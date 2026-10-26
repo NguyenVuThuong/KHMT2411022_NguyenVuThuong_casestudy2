@@ -34,4 +34,29 @@ function validateRegister(req, res, next) {
   next();
 }
 
-module.exports = { validateRegister };
+// Middleware kiểm tra dữ liệu đăng nhập
+function validateLogin(req, res, next) {
+  const body = req.body || {};
+  const { email, password } = body;
+  const errors = [];
+
+  if (typeof email !== 'string' || !isValidEmail(email.trim())) {
+    errors.push('Email không hợp lệ');
+  }
+
+  if (typeof password !== 'string' || password.length === 0) {
+    errors.push('Vui lòng nhập mật khẩu');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Dữ liệu không hợp lệ',
+      errors
+    });
+  }
+
+  next();
+}
+
+module.exports = { validateRegister, validateLogin };
