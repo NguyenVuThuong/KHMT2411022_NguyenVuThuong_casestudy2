@@ -1,23 +1,12 @@
-
+// Nạp biến môi trường từ file .env (phải làm đầu tiên)
 require('dotenv').config();
 
-const express = require('express');
+const app = require('./app');
 const connectDatabase = require('./config/database');
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-
-// API kiểm tra trạng thái server
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Task Manager API is running!',
-    status: 'success'
-  });
-});
-
-// Kết nối database trước khi mở server
+// Kết nối database trước, thành công mới mở server
 async function startServer() {
   await connectDatabase();
 
