@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const authRoutes = require('./routes/authRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -35,6 +36,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Các route xác thực: /api/auth/...
+app.use('/api/auth', authRoutes);
 
 // Hai middleware này PHẢI đặt cuối cùng, sau tất cả route
 app.use(notFound);
