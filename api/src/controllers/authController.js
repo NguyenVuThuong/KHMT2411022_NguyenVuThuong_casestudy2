@@ -107,4 +107,29 @@ async function getMe(req, res) {
   });
 }
 
-module.exports = { register, login, getMe };
+// PUT /api/auth/me  (cập nhật họ tên và/hoặc ảnh đại diện)
+async function updateMe(req, res) {
+  // Chỉ lấy đúng các trường được phép sửa, bỏ qua mọi trường khác
+  // (ví dụ client gửi thêm email hay passwordHash cũng không có tác dụng)
+  const updates = {};
+
+  if (req.body.fullName !== undefined) {
+    updates.fullName = req.body.fullName.trim();
+  }
+  if (req.body.avatarUrl !== undefined) {
+    updates.avatarUrl = req.body.avatarUrl;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+    new: true, // trả về bản ghi SAU khi cập nhật
+    runValidators: true // vẫn chạy các luật kiểm tra của model
+  }).select('-passwordHash');
+
+  res.json({
+    status: 'success',
+    message: 'Cập nhật thông tin thành công',
+    data: { user: toUserResponse(updatedUser) }
+  });
+}
+
+module.exports = { register, login, getMe, updateMe };
