@@ -102,4 +102,40 @@ function validateUpdateProfile(req, res, next) {
   next();
 }
 
-module.exports = { validateRegister, validateLogin, validateUpdateProfile };
+// Middleware kiểm tra dữ liệu đổi mật khẩu
+function validateChangePassword(req, res, next) {
+  const body = req.body || {};
+  const { currentPassword, newPassword } = body;
+  const errors = [];
+
+  if (typeof currentPassword !== 'string' || currentPassword.length === 0) {
+    errors.push('Vui lòng nhập mật khẩu hiện tại');
+  }
+
+  if (
+    typeof newPassword !== 'string' ||
+    newPassword.length < 6 ||
+    newPassword.length > 72
+  ) {
+    errors.push('Mật khẩu mới phải từ 6 đến 72 ký tự');
+  } else if (newPassword === currentPassword) {
+    errors.push('Mật khẩu mới phải khác mật khẩu hiện tại');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Dữ liệu không hợp lệ',
+      errors
+    });
+  }
+
+  next();
+}
+
+module.exports = {
+  validateRegister,
+  validateLogin,
+  validateUpdateProfile,
+  validateChangePassword
+};

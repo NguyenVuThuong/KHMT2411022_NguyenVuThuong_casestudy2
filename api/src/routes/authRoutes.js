@@ -3,12 +3,14 @@ const {
   register,
   login,
   getMe,
-  updateMe
+  updateMe,
+  changePassword
 } = require('../controllers/authController');
 const {
   validateRegister,
   validateLogin,
-  validateUpdateProfile
+  validateUpdateProfile,
+  validateChangePassword
 } = require('../validators/authValidator');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -25,5 +27,8 @@ router.get('/me', protect, getMe);
 
 // PUT /api/auth/me  (phải đăng nhập, dữ liệu phải hợp lệ)
 router.put('/me', protect, validateUpdateProfile, updateMe);
+
+// PUT /api/auth/change-password  (phải đăng nhập, dữ liệu phải hợp lệ)
+router.put('/change-password', protect, validateChangePassword, changePassword);
 
 module.exports = router;

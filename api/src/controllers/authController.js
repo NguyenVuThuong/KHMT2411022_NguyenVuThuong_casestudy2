@@ -132,4 +132,32 @@ async function updateMe(req, res) {
   });
 }
 
-module.exports = { register, login, getMe, updateMe };
+// PUT /api/auth/change-password
+async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body;
+
+  // req.user đã bị loại passwordHash (ở middleware protect),
+  // nên phải tìm lại user để lấy bản băm hiện tại
+  const user = await User.findById(req.user._id);
+
+  // 1. Kiểm tra mật khẩu hiện tại
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    // Dùng 400 (không dùng 401) để ứng dụng không hiểu nhầm là hết phiên đăng nhập
+    return res.status(400).json({
+      status: 'error',
+      message: 'Mật khẩu hiện tại không đúng'
+    });
+  }
+
+  // 2. Băm mật khẩu mới rồi lưu
+  user.passwordHash = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  res.json({
+    status: 'success',
+    message: 'Đổi mật khẩu thành công'
+  });
+}
+
+module.exports = { register, login, getMe, updateMe, changePassword };
