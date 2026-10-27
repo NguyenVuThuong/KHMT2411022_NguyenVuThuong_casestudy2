@@ -99,4 +99,12 @@ async function login(req, res) {
   });
 }
 
-module.exports = { register, login };
+// GET /api/auth/me  (route này đã qua middleware protect nên có req.user)
+async function getMe(req, res) {
+  res.json({
+    status: 'success',
+    data: { user: toUserResponse(req.user) }
+  });
+}
+
+module.exports = { register, login, getMe };
