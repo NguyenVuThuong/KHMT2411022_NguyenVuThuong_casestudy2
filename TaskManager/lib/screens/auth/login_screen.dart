@@ -4,6 +4,7 @@ import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
 import '../../utils/validators.dart';
 import '../tasks/task_list_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,6 +59,28 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  // Mở màn hình đăng ký; nếu đăng ký xong sẽ nhận lại email vừa tạo
+  Future<void> _openRegister() async {
+    final registeredEmail = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+    );
+
+    if (!mounted) return;
+
+    if (registeredEmail != null) {
+      setState(() {
+        _emailController.text = registeredEmail;
+        _passwordController.clear();
+        _errorMessage = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đăng ký thành công! Hãy đăng nhập.'),
+        ),
+      );
     }
   }
 
@@ -142,14 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () {
-                        // Màn hình đăng ký sẽ được làm ở Bước 3.8
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Màn hình đăng ký sẽ làm ở bước sau'),
-                          ),
-                        );
-                      },
+                      onPressed: _isLoading ? null : _openRegister,
                       child: const Text('Chưa có tài khoản? Đăng ký'),
                     ),
                   ],
