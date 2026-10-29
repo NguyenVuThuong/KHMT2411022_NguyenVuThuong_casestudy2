@@ -49,6 +49,31 @@ class AuthService {
     }
   }
 
+  // Cập nhật họ tên và ảnh đại diện (avatarUrl rỗng nghĩa là xóa ảnh)
+  Future<User> updateProfile({
+    required String fullName,
+    required String avatarUrl,
+  }) async {
+    final response = await _api.put('/auth/me', {
+      'fullName': fullName,
+      'avatarUrl': avatarUrl,
+    });
+
+    final data = response['data'] as Map<String, dynamic>;
+    return User.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  // Đổi mật khẩu: thất bại thì ném ApiException (ví dụ sai mật khẩu hiện tại)
+  Future<void> changePassword(
+      String currentPassword,
+      String newPassword,
+      ) async {
+    await _api.put('/auth/change-password', {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
+
   // Đăng xuất: xóa token trên máy
   Future<void> logout() async {
     await _api.clearToken();

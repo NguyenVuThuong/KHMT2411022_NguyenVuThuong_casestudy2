@@ -1,22 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../../models/user.dart';
-import '../../services/auth_service.dart';
-import '../auth/login_screen.dart';
+import '../profile/profile_screen.dart';
 
 // TẠM THỜI: sẽ viết lại thành danh sách công việc ở Giai đoạn 4
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   final User user;
 
   const TaskListScreen({super.key, required this.user});
 
-  Future<void> _handleLogout(BuildContext context) async {
-    await AuthService().logout();
-    if (!context.mounted) return;
-    // Về màn hình đăng nhập và xóa hết các màn hình trước đó
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
+  @override
+  State<TaskListScreen> createState() => _TaskListScreenState();
+}
+
+class _TaskListScreenState extends State<TaskListScreen> {
+  late User _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+  }
+
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(
+          user: _user,
+          // Khi hồ sơ được sửa, cập nhật lại lời chào ở màn hình này
+          onUserUpdated: (updated) => setState(() => _user = updated),
+        ),
+      ),
     );
   }
 
@@ -27,9 +41,9 @@ class TaskListScreen extends StatelessWidget {
         title: const Text('Công việc'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () => _handleLogout(context),
+            icon: const Icon(Icons.account_circle),
+            tooltip: 'Cá nhân',
+            onPressed: _openProfile,
           ),
         ],
       ),
@@ -38,11 +52,11 @@ class TaskListScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Xin chào, ${user.fullName}',
+              'Xin chào, ${_user.fullName}',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            Text(user.email),
+            Text(_user.email),
           ],
         ),
       ),
